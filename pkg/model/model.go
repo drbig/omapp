@@ -8,8 +8,9 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/darkhelmet/env"
 	"github.com/jinzhu/gorm"
+
+	"omapp/vendor/env"
 )
 
 const (
@@ -48,10 +49,9 @@ type MapState int
 
 const (
 	QUEUE MapState = iota
-	RUN
 	READY
-	DELAY
 	BROKEN
+	DELETE
 )
 
 type Map struct {
@@ -62,7 +62,7 @@ type Map struct {
 	ImageName     string
 	WorldName     string
 	Width, Height int
-	Overmaps      int
+	Area, Visited int
 }
 
 func (m *Map) BeforeCreate() error {
@@ -80,6 +80,7 @@ func Init() error {
 		return err
 	}
 	if env.BoolDefault("OMA_DB_VERBOSE", false) {
+		fmt.Println("DB VERBOSE")
 		Db.LogMode(true)
 	}
 	return nil
