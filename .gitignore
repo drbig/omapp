@@ -1,3 +1,4 @@
 cmd/model/model
 cmd/backend/backend
+cmd/worker/worker
 vendor/

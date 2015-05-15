@@ -80,7 +80,6 @@ func Init() error {
 		return err
 	}
 	if env.BoolDefault("OMA_DB_VERBOSE", false) {
-		fmt.Println("DB VERBOSE")
 		Db.LogMode(true)
 	}
 	return nil

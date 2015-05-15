@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -39,6 +38,7 @@ func main() {
 
 	store = sessions.NewCookieStore([]byte(env.String("OMA_WEB_SECRET")))
 
+	log.Println("Connecting to database...")
 	if err := model.Init(); err != nil {
 		log.Fatalln(err)
 		os.Exit(3)
@@ -51,10 +51,7 @@ func main() {
 	router.HandleFunc("/browse/{by}", handleBrowse)
 	router.HandleFunc("/info", handleInfo)
 
-	addr := fmt.Sprintf("%s:%s",
-		env.StringDefault("OMA_WEB_HOST", "0.0.0.0"),
-		env.StringDefault("OMA_WEB_PORT", "7777"),
-	)
+	addr := env.StringDefault("OMA_WEB_MOUNT", "0.0.0.0:7777")
 	log.Println("Firing up HTTP server at", addr)
 	log.Fatalln(http.ListenAndServe(addr,
 		context.ClearHandler(logging.Handler(router)),
