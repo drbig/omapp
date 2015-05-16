@@ -1,0 +1,5 @@
+- Remove blank lines
+- Proper Makefile
+	- Generate version from git
+	- Setup database driver import
+- Use a Rakefile?
