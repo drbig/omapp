@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"sync"
 	"time"
 
 	//_ "github.com/go-sql-driver/mysql"
@@ -23,118 +22,119 @@ import (
 	"omapp/pkg/queue"
 )
 
-var (
-	wg   sync.WaitGroup
-	root string
-)
+var root string
 
 func main() {
 	log.Println("Starting worker...")
-
 	root = env.String("OMA_DATA_ROOT")
-	limit := env.IntDefault("OMA_W_LIMIT", 4)
-
 	log.Println("Connecting to database...")
 	if err := model.Init(); err != nil {
 		log.Fatalln(err)
 		os.Exit(3)
 	}
-
 	log.Println("Connecting to queue...")
 	if err := queue.Init(); err != nil {
 		log.Fatalln(err)
 		os.Exit(3)
 	}
-
 	log.Println("Entering main loop.")
-	var running int
 	for {
 		msg, jid, err := queue.Recv()
 		if err != nil {
 			log.Println("ERROR:", err)
 			continue
 		}
-
-		if running >= limit {
-			wg.Wait()
-			running = 0
-		}
-
-		running += 1
-		wg.Add(1)
-		go process(msg, jid)
+		process(jid, msg)
 	}
 }
 
-func process(msg *queue.Message, jid uint64) {
-	var mr model.Map
+func process(jid uint64, msg *queue.Message) {
+	var rec model.Map
 	start := time.Now()
-	say(jid, "Message:", msg)
-	model.Db.First(&mr, msg.Target)
-
+	log.Println("Job:", jid, "Message:", msg)
+	model.Db.First(&rec, msg.Target)
 	switch msg.Type {
 	case queue.MAP:
+		err := doMap(jid, msg, &rec)
+		delay := 10 * time.Second
+		if rec.State == model.BROKEN {
+			log.Println("Job:", jid, "ERROR:", err)
+			delay = 4 * time.Hour
+		}
+		log.Println("Job:", jid, "Saving record...")
+		if err := model.Db.Save(&rec).Error; err != nil {
+			log.Println("Job:", jid, "ERROR:", err, "on save for:", msg.Target)
+		}
+		log.Println("Job:", jid, "Enqueuing clean job...")
+		if _, err := queue.Send(queue.CLEAN, msg.Target, 10, delay); err != nil {
+			log.Println("Job:", jid, "FATAL:", err, "on enqueue clean for:", msg.Target)
+		}
+	case queue.CLEAN:
 		data := path.Join(root, "uploads", strconv.Itoa(msg.Target))
-		m, err := overmapper.NewMap(data)
-		if err != nil {
-			say(jid, "ERROR:", err)
-			mr.State = model.BROKEN
-			model.Db.Save(&mr)
-			goto finish
+		log.Println("Job:", jid, "Removing all uploaded files...")
+		if err := os.RemoveAll(data); err != nil {
+			log.Println("Job:", jid, "ERROR:", err)
 		}
-		say(jid, mr)
-		mr.Width = m.Width
-		mr.Height = m.Height
-		mr.Area = m.Width * m.Height
-		mr.Visited = len(m.Maps)
-		say(jid, "Drawing...")
-		i, err := m.Draw()
-		if err != nil {
-			say(jid, "ERROR:", err)
-			mr.State = model.BROKEN
-			model.Db.Save(&mr)
-			goto finish
+		if rec.State == model.BROKEN {
+			name := fmt.Sprintf("%d.png", msg.Target)
+			target := path.Join(root, "maps", name)
+			if _, err := os.Stat(target); err == nil {
+				log.Println("Job:", jid, "Removing map image...")
+				if err := os.Remove(target); err != nil {
+					log.Println("Job:", jid, "ERROR:", err)
+				}
+			}
 		}
-		name := fmt.Sprintf("%d.png", msg.Target)
-		target := path.Join(root, "maps", name)
-		o, err := os.Create(target)
-		if err != nil {
-			say(jid, "ERROR:", err)
-			mr.State = model.BROKEN
-			model.Db.Save(&mr)
-			goto finish
+	case queue.DELETE:
+		target := path.Join(root, "maps", rec.ImageName)
+		log.Println("Job:", jid, "Removing map image...")
+		if err := os.Remove(target); err != nil {
+			log.Println("Job:", jid, "ERROR:", err)
 		}
-		if err := png.Encode(o, i); err != nil {
-			say(jid, "ERROR:", err)
-			mr.State = model.BROKEN
-			model.Db.Save(&mr)
-			goto finish
-		}
-		mr.ImageName = name
-		mr.State = model.READY
-		model.Db.Save(&mr)
-	case queue.DEL:
-	}
-
-finish:
-	status := "Done"
-	if mr.State == model.BROKEN {
-		status = "Broken"
-		say(jid, "Not ready, adding delete job.")
-		djid, err := queue.Send(queue.DEL, msg.Target, 10, 1*time.Hour)
-		if err != nil {
-			status = "Very broken"
-			say(jid, "FATAL: Couldn't add DEL job:", err)
-		} else {
-			say(jid, "Added delete job:", djid)
+		log.Println("Job:", jid, "Removing database record...")
+		if err := model.Db.Delete(&rec).Error; err != nil {
+			log.Println("Job:", jid, "FATAL:", err)
 		}
 	}
 	end := time.Now()
-	say(jid, "Status:", status, "Took:", end.Sub(start))
-	queue.Conn.Delete(jid)
-	wg.Done()
+	log.Println("Job:", jid, "Took:", end.Sub(start))
+	if err := queue.Conn.Delete(jid); err != nil {
+		log.Println("Job:", jid, "FATAL:", err, "on done")
+	}
 }
 
-func say(jid uint64, args ...interface{}) {
-	log.Println("Job:", jid, args)
+func doMap(jid uint64, msg *queue.Message, rec *model.Map) error {
+	data := path.Join(root, "uploads", strconv.Itoa(msg.Target))
+	m, err := overmapper.NewMap(data)
+	if err != nil {
+		rec.State = model.BROKEN
+		return err
+	}
+	log.Println("Job:", jid, m)
+	rec.Width = m.Width
+	rec.Height = m.Height
+	rec.Area = m.Width * m.Height
+	rec.Visited = len(m.Maps)
+	log.Println("Job:", jid, "Drawing...")
+	i, err := m.Draw()
+	if err != nil {
+		rec.State = model.BROKEN
+		return err
+	}
+	name := fmt.Sprintf("%d.png", msg.Target)
+	target := path.Join(root, "maps", name)
+	log.Println("Job:", jid, "Saving...")
+	o, err := os.Create(target)
+	if err != nil {
+		rec.State = model.BROKEN
+		return err
+	}
+	if err := png.Encode(o, i); err != nil {
+		rec.State = model.BROKEN
+		return err
+	}
+	log.Println("Job:", jid, "Mapping done.")
+	rec.ImageName = name
+	rec.State = model.READY
+	return nil
 }
