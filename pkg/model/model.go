@@ -18,13 +18,13 @@ const (
 )
 
 type User struct {
-	ID        int
+	ID        int    `json:"-"`
 	Login     string `sql:"unique_index"`
-	Password  string
-	Salt      uint32
+	Password  string `json:"-"`
+	Salt      uint32 `json:"-"`
 	CreatedAt time.Time
 	RetiredAt *time.Time
-	Maps      []Map
+	Maps      []Map `json:"-"`
 }
 
 func (u *User) BeforeCreate() error {
@@ -55,14 +55,19 @@ const (
 )
 
 type Map struct {
-	ID            int
-	UserID        int `sql:"index"`
-	State         MapState
+	ID            int      `json:"-"`
+	UserID        int      `sql:"index" json:"-"`
+	State         MapState `json:"-"`
 	CreatedAt     time.Time
 	ImageName     string
 	WorldName     string
 	Width, Height int
 	Area, Visited int
+}
+
+type MapPublic struct {
+	Map
+	Login string
 }
 
 func (m *Map) BeforeCreate() error {

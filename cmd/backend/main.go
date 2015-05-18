@@ -24,8 +24,7 @@ import (
 )
 
 const (
-	VERSION = "1"
-	PAGE    = 30
+	PAGE = 30
 )
 
 var (
@@ -35,23 +34,19 @@ var (
 
 func main() {
 	log.Println("Starting backend...")
-
+	addr := env.StringDefault("OMA_WEB_MOUNT", "0.0.0.0:7777")
 	store = sessions.NewCookieStore([]byte(env.String("OMA_WEB_SECRET")))
-
 	log.Println("Connecting to database...")
 	if err := model.Init(); err != nil {
 		log.Fatalln(err)
 		os.Exit(3)
 	}
-
 	router = mux.NewRouter()
 	router.HandleFunc("/user/{login}", handleUserCheck).Methods("GET")
 	router.HandleFunc("/user/{login}", handleUserAuth).Methods("POST")
 	router.HandleFunc("/user/{login}/info", handleUserInfo)
 	router.HandleFunc("/browse/{by}", handleBrowse)
 	router.HandleFunc("/info", handleInfo)
-
-	addr := env.StringDefault("OMA_WEB_MOUNT", "0.0.0.0:7777")
 	log.Println("Firing up HTTP server at", addr)
 	log.Fatalln(http.ListenAndServe(addr,
 		context.ClearHandler(logging.Handler(router)),
@@ -61,7 +56,6 @@ func main() {
 func handleUserCheck(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
 	login := v["login"]
-
 	var user model.User
 	if err := model.Db.Where("login = ?", login).First(&user).Error; err != nil {
 		reply.Send(w, http.StatusOK, true, false)
@@ -83,7 +77,6 @@ func handleUserAuth(w http.ResponseWriter, r *http.Request) {
 	}
 	v := mux.Vars(r)
 	login := v["login"]
-
 	var user model.User
 	if err := model.Db.Where("login = ?", login).First(&user).Error; err != nil {
 		user = model.User{Login: login}
@@ -97,7 +90,6 @@ func handleUserAuth(w http.ResponseWriter, r *http.Request) {
 		reply.Send(w, http.StatusOK, true, "user added")
 		return
 	}
-
 	if !user.CheckPassword(pass) {
 		reply.Send(w, http.StatusOK, false, "wrong password")
 		return
@@ -115,26 +107,19 @@ func userSetCookie(w http.ResponseWriter, r *http.Request, userid int) {
 func handleUserInfo(w http.ResponseWriter, r *http.Request) {
 	v := mux.Vars(r)
 	login := v["login"]
-
 	var user model.User
 	if err := model.Db.Where("login = ?", login).First(&user).Error; err != nil {
 		reply.Send(w, http.StatusOK, false, "no such user")
 		return
 	}
-
 	var maps []model.Map
 	if err := model.Db.Model(&user).Related(&maps).Order("state desc, created_at desc").Error; err != nil {
 		log.Println("ERROR:", err)
 		reply.Send(w, http.StatusInternalServerError, false, "error fetching user maps")
 		return
 	}
-
 	reply.Send(w, http.StatusOK, true, map[string]interface{}{
-		"user": map[string]interface{}{
-			"login":   user.Login,
-			"since":   user.CreatedAt,
-			"retired": user.RetiredAt,
-		},
+		"user": user,
 		"maps": maps,
 	})
 }
@@ -151,58 +136,58 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 	}
 	v := mux.Vars(r)
 	by := v["by"]
-
-	query := model.Db.Where("state = ?", model.READY)
+	query := model.Db.Table("maps").Where("state = ?", model.READY)
 	switch by {
 	case "date":
 		query.Order("created_at desc")
 	case "area":
-		query.Order("area desc")
+		query.Order("area desc, created_at desc")
 	case "visited":
-		query.Order("visited desc")
+		query.Order("visited desc, created_at desc")
 	default:
 		log.Println("WARN: no such browse order")
 		reply.Send(w, http.StatusOK, false, "no such browse order")
 		return
 	}
-
-	var maps []model.Map
+	var maps []model.MapPublic
 	var total int
-	query.First(&model.Map{}).Count(&total).Offset((page - 1) * PAGE).Limit(PAGE).Find(&maps)
+	query.Count(&total).Offset((page - 1) * PAGE).Limit(PAGE)
+	query.Select("users.login, maps.*")
+	query.Joins("left join users on users.id = maps.user_id").Scan(&maps)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
 		reply.Send(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
-
 	reply.Send(w, http.StatusOK, true, map[string]interface{}{
 		"maps":  maps,
 		"page":  page,
-		"pages": total / PAGE,
+		"pages": total/PAGE + 1,
 	})
 }
 
 func handleInfo(w http.ResponseWriter, r *http.Request) {
-	var maps []model.Map
+	var maps []model.MapPublic
 	var mtotal int
-	query := model.Db.Where("state = ?", model.READY).Order("created_at desc")
-	query.First(&model.Map{}).Count(&mtotal).Limit(10).Find(&maps)
+
+	query := model.Db.Table("maps").Where("state = ?", model.READY).Order("created_at desc")
+	query.Count(&mtotal).Limit(10).Select("users.login, maps.*")
+	query.Joins("left join users on users.id = maps.user_id").Scan(&maps)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
 		reply.Send(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
-
-	var queue []model.Map
+	var queue []model.MapPublic
 	var qtotal int
-	query = model.Db.Where("state = ?", model.QUEUE).Order("created_at desc")
-	query.First(&model.Map{}).Count(&qtotal).Limit(10).Find(&queue)
+	query = model.Db.Table("maps").Where("state = ?", model.QUEUE).Order("created_at desc")
+	query.Count(&qtotal).Limit(10).Select("users.login, maps.*")
+	query.Joins("left join users on users.id = maps.user_id").Scan(&queue)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
 		reply.Send(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
-
 	reply.Send(w, http.StatusOK, true, map[string]interface{}{
 		"maps": maps, "mtotal": mtotal,
 		"queue": queue, "qtotal": qtotal,
