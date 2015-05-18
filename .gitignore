@@ -1,4 +1,5 @@
 cmd/model/model
 cmd/backend/backend
+cmd/uploader/uploader
 cmd/worker/worker
 vendor/
