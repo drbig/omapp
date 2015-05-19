@@ -22,10 +22,9 @@ import (
 
 	"omapp/vendor/env"
 
-	"omapp/pkg/http/logging"
-	"omapp/pkg/http/reply"
 	"omapp/pkg/model"
 	"omapp/pkg/queue"
+	"omapp/pkg/web"
 )
 
 var (
@@ -53,7 +52,7 @@ func main() {
 	router.HandleFunc("/upload", handleUpload).Methods("POST")
 	log.Println("Firing up HTTP server at", addr)
 	log.Fatalln(http.ListenAndServe(addr,
-		context.ClearHandler(logging.Handler(router)),
+		context.ClearHandler(web.Logging(router)),
 	))
 }
 
@@ -61,20 +60,20 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 	s, _ := store.Get(r, "omapp-session")
 	uidval, present := s.Values["user"]
 	if !present {
-		reply.Send(w, http.StatusOK, false, "not logged in")
+		web.Reply(w, http.StatusOK, false, "not logged in")
 		return
 	}
 	uid := uidval.(int)
 	var user model.User
 	if err := model.Db.First(&user, uid).Error; err != nil {
-		reply.Send(w, http.StatusOK, false, "no such user")
+		web.Reply(w, http.StatusOK, false, "no such user")
 		return
 	}
 	log.Println("Upload request from:", user.Login)
 	mrec := model.Map{UserID: uid}
 	if err := model.Db.Save(&mrec).Error; err != nil {
 		log.Println("ERROR:", err)
-		reply.Send(w, http.StatusInternalServerError, false, "database error")
+		web.Reply(w, http.StatusInternalServerError, false, "database error")
 		return
 	}
 	dir := path.Join(root, "uploads", strconv.Itoa(mrec.ID))
@@ -135,7 +134,7 @@ func handleUpload(w http.ResponseWriter, r *http.Request) {
 	if _, err := queue.Send(queue.MAP, mrec.ID, 5, 5*time.Second); err != nil {
 		log.Println("FATAL:", err)
 	}
-	reply.Send(w, http.StatusOK, true, map[string]int{
+	web.Reply(w, http.StatusOK, true, map[string]int{
 		"uploaded": uploaded,
 		"skipped":  skipped,
 	})
@@ -150,5 +149,5 @@ func errorCleanup(w http.ResponseWriter, mrec *model.Map, err error, msg string)
 	if _, err := queue.Send(queue.CLEAN, mrec.ID, 10, 4*time.Hour); err != nil {
 		log.Println("FATAL:", err)
 	}
-	reply.Send(w, http.StatusInternalServerError, false, msg)
+	web.Reply(w, http.StatusInternalServerError, false, msg)
 }

@@ -18,9 +18,8 @@ import (
 
 	"omapp/vendor/env"
 
-	"omapp/pkg/http/logging"
-	"omapp/pkg/http/reply"
 	"omapp/pkg/model"
+	"omapp/pkg/web"
 )
 
 const (
@@ -49,7 +48,7 @@ func main() {
 	router.HandleFunc("/info", handleInfo)
 	log.Println("Firing up HTTP server at", addr)
 	log.Fatalln(http.ListenAndServe(addr,
-		context.ClearHandler(logging.Handler(router)),
+		context.ClearHandler(web.Logging(router)),
 	))
 }
 
@@ -58,21 +57,21 @@ func handleUserCheck(w http.ResponseWriter, r *http.Request) {
 	login := v["login"]
 	var user model.User
 	if err := model.Db.Where("login = ?", login).First(&user).Error; err != nil {
-		reply.Send(w, http.StatusOK, true, false)
+		web.Reply(w, http.StatusOK, true, false)
 		return
 	}
-	reply.Send(w, http.StatusOK, true, true)
+	web.Reply(w, http.StatusOK, true, true)
 }
 
 func handleUserAuth(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		log.Println("ERROR:", err)
-		reply.Send(w, http.StatusInternalServerError, false, "error parsing form")
+		web.Reply(w, http.StatusInternalServerError, false, "error parsing form")
 		return
 	}
 	pass := r.PostForm.Get("password")
 	if pass == "" {
-		reply.Send(w, http.StatusOK, false, "no password given")
+		web.Reply(w, http.StatusOK, false, "no password given")
 		return
 	}
 	v := mux.Vars(r)
@@ -83,19 +82,19 @@ func handleUserAuth(w http.ResponseWriter, r *http.Request) {
 		user.SetPassword(pass)
 		if err := model.Db.Create(&user).Error; err != nil {
 			log.Println("ERROR:", err)
-			reply.Send(w, http.StatusInternalServerError, false, "error creating user")
+			web.Reply(w, http.StatusInternalServerError, false, "error creating user")
 			return
 		}
 		userSetCookie(w, r, user.ID)
-		reply.Send(w, http.StatusOK, true, "user added")
+		web.Reply(w, http.StatusOK, true, "user added")
 		return
 	}
 	if !user.CheckPassword(pass) {
-		reply.Send(w, http.StatusOK, false, "wrong password")
+		web.Reply(w, http.StatusOK, false, "wrong password")
 		return
 	}
 	userSetCookie(w, r, user.ID)
-	reply.Send(w, http.StatusOK, true, "auth ok")
+	web.Reply(w, http.StatusOK, true, "auth ok")
 }
 
 func userSetCookie(w http.ResponseWriter, r *http.Request, userid int) {
@@ -109,16 +108,16 @@ func handleUserInfo(w http.ResponseWriter, r *http.Request) {
 	login := v["login"]
 	var user model.User
 	if err := model.Db.Where("login = ?", login).First(&user).Error; err != nil {
-		reply.Send(w, http.StatusOK, false, "no such user")
+		web.Reply(w, http.StatusOK, false, "no such user")
 		return
 	}
 	var maps []model.Map
 	if err := model.Db.Model(&user).Related(&maps).Order("state desc, created_at desc").Error; err != nil {
 		log.Println("ERROR:", err)
-		reply.Send(w, http.StatusInternalServerError, false, "error fetching user maps")
+		web.Reply(w, http.StatusInternalServerError, false, "error fetching user maps")
 		return
 	}
-	reply.Send(w, http.StatusOK, true, map[string]interface{}{
+	web.Reply(w, http.StatusOK, true, map[string]interface{}{
 		"user": user,
 		"maps": maps,
 	})
@@ -127,7 +126,7 @@ func handleUserInfo(w http.ResponseWriter, r *http.Request) {
 func handleBrowse(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		log.Println("ERROR:", err)
-		reply.Send(w, http.StatusInternalServerError, false, "error parsing form")
+		web.Reply(w, http.StatusInternalServerError, false, "error parsing form")
 		return
 	}
 	page, err := strconv.Atoi(r.Form.Get("page"))
@@ -146,7 +145,7 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 		query.Order("visited desc, created_at desc")
 	default:
 		log.Println("WARN: no such browse order")
-		reply.Send(w, http.StatusOK, false, "no such browse order")
+		web.Reply(w, http.StatusOK, false, "no such browse order")
 		return
 	}
 	var maps []model.MapPublic
@@ -156,10 +155,10 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 	query.Joins("left join users on users.id = maps.user_id").Scan(&maps)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
-		reply.Send(w, http.StatusInternalServerError, false, "error running query")
+		web.Reply(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
-	reply.Send(w, http.StatusOK, true, map[string]interface{}{
+	web.Reply(w, http.StatusOK, true, map[string]interface{}{
 		"maps":  maps,
 		"page":  page,
 		"pages": total/PAGE + 1,
@@ -175,7 +174,7 @@ func handleInfo(w http.ResponseWriter, r *http.Request) {
 	query.Joins("left join users on users.id = maps.user_id").Scan(&maps)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
-		reply.Send(w, http.StatusInternalServerError, false, "error running query")
+		web.Reply(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
 	var queue []model.MapPublic
@@ -185,10 +184,10 @@ func handleInfo(w http.ResponseWriter, r *http.Request) {
 	query.Joins("left join users on users.id = maps.user_id").Scan(&queue)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
-		reply.Send(w, http.StatusInternalServerError, false, "error running query")
+		web.Reply(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
-	reply.Send(w, http.StatusOK, true, map[string]interface{}{
+	web.Reply(w, http.StatusOK, true, map[string]interface{}{
 		"maps": maps, "mtotal": mtotal,
 		"queue": queue, "qtotal": qtotal,
 	})

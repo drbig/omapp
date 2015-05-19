@@ -1,8 +1,9 @@
 // See LICENSE.txt for licensing information.
 
-package logging
+package web
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"time"
@@ -27,7 +28,7 @@ func (w *statusWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func Handler(h http.Handler) http.HandlerFunc {
+func Logging(h http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		sw := statusWriter{w, 0, 0}
@@ -36,4 +37,22 @@ func Handler(h http.Handler) http.HandlerFunc {
 		duration := end.Sub(start)
 		log.Println(r.RemoteAddr, r.Method, r.URL, sw.status, sw.length, duration)
 	}
+}
+
+type Message struct {
+	Success bool        `json:"success"`
+	Data    interface{} `json:"data"`
+}
+
+func Reply(w http.ResponseWriter, status int, success bool, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	raw, err := json.Marshal(Message{success, data})
+	if err != nil {
+		log.Println("ERROR:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"success": false, "data": "error generating reply"}`))
+		return
+	}
+	w.WriteHeader(status)
+	w.Write(raw)
 }
