@@ -10,13 +10,10 @@ import (
 	"github.com/jwaldrip/odin/cli"
 
 	"omapp/pkg/model"
+	"omapp/pkg/ver"
 )
 
-const (
-	VERSION = "3"
-)
-
-var cmd = cli.New(VERSION, "Model utility", check)
+var cmd = cli.New(ver.VERSION, "Model utility", check)
 
 func init() {
 	cmd.DefineSubCommand("migrate", "auto migrate database", migrate)

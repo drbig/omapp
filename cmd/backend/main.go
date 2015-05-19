@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/sessions"
 
 	"omapp/pkg/model"
+	"omapp/pkg/ver"
 	"omapp/pkg/web"
 )
 
@@ -27,7 +28,7 @@ var (
 )
 
 func main() {
-	log.Println("Starting backend...")
+	log.Println("Starting backend version:", ver.VERSION)
 	addr := env.StringDefault("OMA_WEB_MOUNT", "0.0.0.0:7777")
 	store = sessions.NewCookieStore([]byte(env.String("OMA_WEB_SECRET")))
 	log.Println("Connecting to database...")

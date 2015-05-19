@@ -18,10 +18,6 @@ import (
 )
 
 const (
-	VERSION = "4"
-)
-
-const (
 	BG = iota
 	FG
 	NOTE

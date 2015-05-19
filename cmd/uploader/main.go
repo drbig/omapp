@@ -19,6 +19,7 @@ import (
 
 	"omapp/pkg/model"
 	"omapp/pkg/queue"
+	"omapp/pkg/ver"
 	"omapp/pkg/web"
 )
 
@@ -29,7 +30,7 @@ var (
 )
 
 func main() {
-	log.Println("Starting uploader...")
+	log.Println("Starting uploader version:", ver.VERSION)
 	root = env.String("OMA_DATA_ROOT")
 	store = sessions.NewCookieStore([]byte(env.String("OMA_WEB_SECRET")))
 	addr := env.StringDefault("OMA_U_MOUNT", "0.0.0.0:8777")

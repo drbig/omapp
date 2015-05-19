@@ -16,10 +16,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const (
-	VERSION = "3"
-)
-
 type User struct {
 	ID        int    `json:"-"`
 	Login     string `sql:"unique_index"`

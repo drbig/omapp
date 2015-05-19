@@ -16,12 +16,13 @@ import (
 	"omapp/pkg/model"
 	"omapp/pkg/overmapper"
 	"omapp/pkg/queue"
+	"omapp/pkg/ver"
 )
 
 var root string
 
 func main() {
-	log.Println("Starting worker...")
+	log.Println("Starting worker version:", ver.VERSION)
 	root = env.String("OMA_DATA_ROOT")
 	log.Println("Connecting to database...")
 	if err := model.Init(); err != nil {

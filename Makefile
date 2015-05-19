@@ -6,8 +6,9 @@ PKG_DEPS=$(foreach pkg,$(PKG_LIST),$(wildcard pkg/$(pkg)/*.go))
 CMD_TGTS=$(foreach cmd,$(CMD_LIST),cmd/$(cmd)/$(cmd))
 CMD_DEPS=$(foreach cmd,$(CMD_LIST),$(wildcard cmd/$(cmd)/*.go))
 CLEAN_TGTS=$(CMD_TGTS:%=clean-%)
+VERSION=$(shell git describe --tags --always --dirty)
 
-all: $(CMD_TGTS)
+all: version $(CMD_TGTS)
 $(CMD_TGTS): $(CMD_DEPS) $(PKG_DEPS)
 	cd $(dir $@) && go build
 
@@ -18,6 +19,9 @@ $(PKG_TESTS):
 clean: $(CLEAN_TGTS)
 $(CLEAN_TGTS):
 	rm -f $(@:clean-%=%)
+
+version:
+	echo -e "package ver\nconst VERSION = \"$(VERSION)\"" > pkg/ver/version.go
 
 .PHONY: test clean
 
