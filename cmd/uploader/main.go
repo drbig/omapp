@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/darkhelmet/env"
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -19,8 +20,6 @@ import (
 	//_ "github.com/go-sql-driver/mysql"
 	//_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
-
-	"omapp/vendor/env"
 
 	"omapp/pkg/model"
 	"omapp/pkg/queue"

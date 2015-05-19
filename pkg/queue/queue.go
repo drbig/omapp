@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/darkhelmet/env"
 	"github.com/iwanbk/gobeanstalk"
-	"omapp/vendor/env"
 )
 
 type JobType int

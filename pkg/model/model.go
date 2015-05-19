@@ -8,9 +8,8 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/darkhelmet/env"
 	"github.com/jinzhu/gorm"
-
-	"omapp/vendor/env"
 )
 
 const (
