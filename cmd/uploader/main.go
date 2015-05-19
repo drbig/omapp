@@ -17,10 +17,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 
-	//_ "github.com/go-sql-driver/mysql"
-	//_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
-
 	"omapp/pkg/model"
 	"omapp/pkg/queue"
 	"omapp/pkg/web"
