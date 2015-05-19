@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"time"
+
+	"omapp/pkg/ver"
 )
 
 type statusWriter struct {
@@ -42,11 +44,12 @@ func Logging(h http.Handler) http.HandlerFunc {
 type Message struct {
 	Success bool        `json:"success"`
 	Data    interface{} `json:"data"`
+	Version string      `json:"ver"`
 }
 
 func Reply(w http.ResponseWriter, status int, success bool, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
-	raw, err := json.Marshal(Message{success, data})
+	raw, err := json.Marshal(Message{success, data, ver.VERSION})
 	if err != nil {
 		log.Println("ERROR:", err)
 		w.WriteHeader(http.StatusInternalServerError)
