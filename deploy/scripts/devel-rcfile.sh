@@ -1,4 +1,5 @@
 OMA_DEPLOY_CMDS=(worker uploader backend)
+OMA_DEPLOY_PORT=9191
 
 export OMA_DATA_ROOT=$OMA_DEPLOY_ROOT
 export OMA_WEB_SECRET=dupa.9
@@ -41,6 +42,10 @@ function oma_fire! {
       echo $! > $OMA_DEPLOY_ROOT/run/${CMD}_${OMA_DEPLOY_STAMP}.pid
     done
 
+    echo "Firing httpd..."
+    ruby -run -e httpd ../../frontend/dist -p $OMA_DEPLOY_PORT >$OMA_DEPLOY_ROOT/run/httpd_${OMA_DEPLOY_STAMP}.log 2>&1 &
+    echo $! > $OMA_DEPLOY_ROOT/run/httpd_${OMA_DEPLOY_STAMP}.pid
+
     export OMA_DEPLOY_RUNNING=1
     echo "All fired!"
     echo "----------"
@@ -48,7 +53,6 @@ function oma_fire! {
   else
     echo "You seem to be running a setup from $OMA_DEPLOY_STAMP"
     echo "Consider oma_retreat!"
-
   fi
 }
 
@@ -58,16 +62,19 @@ function oma_retreat! {
     echo "You don't seem to be running any setup"
     echo "Consider oma_fire!"
   else
+    echo "Retreating httpd..."
+    kill `cat $OMA_DEPLOY_ROOT/run/httpd_${OMA_DEPLOY_STAMP}.pid`
+    rm -f $OMA_DEPLOY_ROOT/run/httpd_${OMA_DEPLOY_STAMP}.pid
+
+    echo "Retreating beanstalkd..."
+    kill `cat $OMA_DEPLOY_ROOT/run/beanstalk_${OMA_DEPLOY_STAMP}.pid`
+    rm -f $OMA_DEPLOY_ROOT/run/beanstalk_${OMA_DEPLOY_STAMP}.pid
+
     for CMD in ${OMA_DEPLOY_CMDS[*]}; do
       echo "Retreating ${CMD}..."
       kill `cat $OMA_DEPLOY_ROOT/run/${CMD}_${OMA_DEPLOY_STAMP}.pid`
       rm -f $OMA_DEPLOY_ROOT/run/${CMD}_${OMA_DEPLOY_STAMP}.pid
     done
-
-    # probably should sleep here
-    echo "Retreating beanstalkd..."
-    kill `cat $OMA_DEPLOY_ROOT/run/beanstalk_${OMA_DEPLOY_STAMP}.pid`
-    rm -f $OMA_DEPLOY_ROOT/run/${CMD}_${OMA_DEPLOY_STAMP}.pid
 
     unset OMA_DEPLOY_RUNNING
     echo "All retreated!"
