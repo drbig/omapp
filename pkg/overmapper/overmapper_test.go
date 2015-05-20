@@ -80,7 +80,6 @@ L 10
 L 11
 0 32400
 `))
-
 	err := skipToLevel(input)
 	if err != nil {
 		t.Errorf("Err: %s", err)
