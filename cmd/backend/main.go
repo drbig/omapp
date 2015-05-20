@@ -9,9 +9,7 @@ import (
 	"strconv"
 
 	"github.com/darkhelmet/env"
-	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 
 	"omapp/pkg/model"
 	"omapp/pkg/ver"
@@ -22,30 +20,20 @@ const (
 	PAGE = 30
 )
 
-var (
-	router *mux.Router
-	store  sessions.Store
-)
-
 func main() {
 	log.Println("Starting backend version:", ver.VERSION)
-	addr := env.StringDefault("OMA_WEB_MOUNT", "0.0.0.0:7777")
-	store = sessions.NewCookieStore([]byte(env.String("OMA_WEB_SECRET")))
+	addr := env.StringDefault("OMA_B_MOUNT", "0.0.0.0:7777")
 	log.Println("Connecting to database...")
 	if err := model.Init(); err != nil {
 		log.Fatalln(err)
 		os.Exit(3)
 	}
-	router = mux.NewRouter()
-	router.HandleFunc("/user/{login}", handleUserCheck).Methods("GET")
-	router.HandleFunc("/user/{login}", handleUserAuth).Methods("POST")
-	router.HandleFunc("/user/{login}/info", handleUserInfo)
-	router.HandleFunc("/browse/{by}", handleBrowse)
-	router.HandleFunc("/info", handleInfo)
-	log.Println("Firing up HTTP server at", addr)
-	log.Fatalln(http.ListenAndServe(addr,
-		context.ClearHandler(web.Logging(router)),
-	))
+	web.Router.HandleFunc("/user/{login}", handleUserCheck).Methods("GET")
+	web.Router.HandleFunc("/user/{login}", handleUserAuth).Methods("POST")
+	web.Router.HandleFunc("/user/{login}/info", handleUserInfo)
+	web.Router.HandleFunc("/browse/{by}", handleBrowse)
+	web.Router.HandleFunc("/info", handleInfo)
+	web.Fire(addr)
 }
 
 func handleUserCheck(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +82,7 @@ func handleUserAuth(w http.ResponseWriter, r *http.Request) {
 }
 
 func userSetCookie(w http.ResponseWriter, r *http.Request, userid int) {
-	s, _ := store.Get(r, "omapp-session")
+	s, _ := web.Store.Get(r, "omapp-session")
 	s.Values["user"] = userid
 	s.Save(r, w)
 }

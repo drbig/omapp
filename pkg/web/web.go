@@ -8,8 +8,25 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/darkhelmet/env"
+	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
+
 	"omapp/pkg/ver"
 )
+
+var (
+	Store  = sessions.NewCookieStore([]byte(env.String("OMA_WEB_SECRET")))
+	Router = mux.NewRouter()
+)
+
+func Fire(addr string) {
+	log.Println("Firing up HTTP server at", addr)
+	log.Fatalln(http.ListenAndServe(addr,
+		context.ClearHandler(Logging(Router)),
+	))
+}
 
 type statusWriter struct {
 	http.ResponseWriter

@@ -5,7 +5,7 @@ export OMA_WEB_SECRET=dupa.9
 export OMA_DB_DRIVER=sqlite3
 export OMA_DB_ARGS=$OMA_DEPLOY_ROOT/db.bin
 export OMA_DB_VERBOSE=0
-export OMA_WEB_MOUNT=0.0.0.0:7777
+export OMA_B_MOUNT=0.0.0.0:7777
 export OMA_U_MOUNT=0.0.0.0:8777
 export OMA_Q_MOUNT=127.0.0.1:11300
 

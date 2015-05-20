@@ -13,9 +13,6 @@ import (
 	"time"
 
 	"github.com/darkhelmet/env"
-	"github.com/gorilla/context"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 
 	"omapp/pkg/model"
 	"omapp/pkg/queue"
@@ -24,15 +21,12 @@ import (
 )
 
 var (
-	root   string
-	router *mux.Router
-	store  sessions.Store
+	root string
 )
 
 func main() {
 	log.Println("Starting uploader version:", ver.VERSION)
 	root = env.String("OMA_DATA_ROOT")
-	store = sessions.NewCookieStore([]byte(env.String("OMA_WEB_SECRET")))
 	addr := env.StringDefault("OMA_U_MOUNT", "0.0.0.0:8777")
 	log.Println("Connecting to database...")
 	if err := model.Init(); err != nil {
@@ -44,16 +38,12 @@ func main() {
 		log.Fatalln(err)
 		os.Exit(3)
 	}
-	router = mux.NewRouter()
-	router.HandleFunc("/upload", handleUpload).Methods("POST")
-	log.Println("Firing up HTTP server at", addr)
-	log.Fatalln(http.ListenAndServe(addr,
-		context.ClearHandler(web.Logging(router)),
-	))
+	web.Router.HandleFunc("/upload", handleUpload).Methods("POST")
+	web.Fire(addr)
 }
 
 func handleUpload(w http.ResponseWriter, r *http.Request) {
-	s, _ := store.Get(r, "omapp-session")
+	s, _ := web.Store.Get(r, "omapp-session")
 	uidval, present := s.Values["user"]
 	if !present {
 		web.Reply(w, http.StatusOK, false, "not logged in")
