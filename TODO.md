@@ -1,5 +1,7 @@
-- Remove blank lines
+- ~~Remove blank lines~~
 - Proper Makefile
-	- Generate version from git
+	- ~~Generate version from git~~
 	- Setup database driver import
 - Use a Rakefile?
+- Better logging system
+	- Syslog?
