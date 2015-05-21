@@ -26,6 +26,11 @@ FRONT_CLEAN+=$(JS_TGTS:%=clean-%)
 FRONT_CLEAN+=$(HBS_TGTS:%=clean-%)
 FRONT_CLEAN+=$(CSS_TGTS:%=clean-%)
 
+# Whole damn thing
+app: backend-test backend frontend
+
+app-clean: backend-clean frontend-clean
+
 # Backend targets
 backend: version $(CMD_TGTS)
 $(CMD_TGTS): $(CMD_DEPS) $(PKG_DEPS)
