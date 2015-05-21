@@ -1,6 +1,17 @@
 {{#if success}}
-Profile for {{user}}
+<h1>Profile for user: {{user}}</h1>
 <hr>
+<table class="table table-striped">
+<tr>
+  <th>Since</th>
+  <td>{{data.user.CreatedAt}}</td>
+</tr>
+<tr>
+  <th>Retired</th>
+  <td>{{data.user.RetiredAt}}</td>
+</tr>
+</table>
+<div class="version">version: {{ver}}</div>
 {{else}}
 Something went wrong...
 {{/if}}
