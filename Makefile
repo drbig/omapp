@@ -66,4 +66,4 @@ $(FRONT_CLEAN):
 print-%:
 	@echo $* = $($*)
 
-.PHONY: test clean
+.PHONY: app-clean backend-test backend-clean frontend-clean
