@@ -2,6 +2,7 @@
 - Proper Makefile
 	- ~~Generate version from git~~
 	- Setup database driver import
+	- More coherent naming convention for targets and variables
 - Use a Rakefile?
 - Better logging system
 	- Syslog?
