@@ -5,3 +5,11 @@ def partial(name, locals = {})
   engine = Haml::Engine.new(source)
   engine.render(binding, locals: locals)
 end
+
+def js(name)
+  File.read(File.join('frontend', 'build', name.to_s + '.min.js'))
+end
+
+def css(name)
+  File.read(File.join('frontend', 'build', name.to_s + '.css'))
+end

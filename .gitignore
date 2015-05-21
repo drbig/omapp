@@ -4,4 +4,5 @@ cmd/uploader/uploader
 cmd/worker/worker
 pkg/ver/
 vendor/
+frontend/build/
 frontend/dist/

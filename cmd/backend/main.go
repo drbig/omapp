@@ -28,12 +28,29 @@ func main() {
 		log.Fatalln(err)
 		os.Exit(3)
 	}
+	web.Router.HandleFunc("/user", handleUser)
 	web.Router.HandleFunc("/user/{login}", handleUserCheck).Methods("GET")
 	web.Router.HandleFunc("/user/{login}", handleUserAuth).Methods("POST")
 	web.Router.HandleFunc("/user/{login}/info", handleUserInfo)
 	web.Router.HandleFunc("/browse/{by}", handleBrowse)
 	web.Router.HandleFunc("/info", handleInfo)
 	web.Fire(addr)
+}
+
+func handleUser(w http.ResponseWriter, r *http.Request) {
+	s, _ := web.Store.Get(r, "omapp-session")
+	uidval, present := s.Values["user"]
+	if !present {
+		web.Reply(w, http.StatusOK, false, "not logged in")
+		return
+	}
+	uid := uidval.(int)
+	var user model.User
+	if err := model.Db.First(&user, uid).Error; err != nil {
+		web.Reply(w, http.StatusOK, false, "no such user")
+		return
+	}
+	web.Reply(w, http.StatusOK, true, user.Login)
 }
 
 func handleUserCheck(w http.ResponseWriter, r *http.Request) {

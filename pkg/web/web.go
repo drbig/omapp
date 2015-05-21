@@ -66,6 +66,7 @@ type Message struct {
 
 func Reply(w http.ResponseWriter, status int, success bool, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*") // VERY TEMPORARY
 	raw, err := json.Marshal(Message{success, data, ver.VERSION})
 	if err != nil {
 		log.Println("ERROR:", err)
