@@ -81,6 +81,10 @@ func process(jid uint64, msg *queue.Message) {
 					log.Println("Job:", jid, "ERROR:", err)
 				}
 			}
+			log.Println("Job:", jid, "Removing database record...")
+			if err := model.Db.Delete(&rec).Error; err != nil {
+				log.Println("Job:", jid, "FATAL:", err)
+			}
 		}
 	case queue.DELETE:
 		target := path.Join(root, "maps", rec.ImageName)

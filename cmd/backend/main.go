@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -136,29 +137,37 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 	}
 	v := mux.Vars(r)
 	by := v["by"]
-	query := model.Db.Table("maps").Where("state = ?", model.READY)
+	var order string
 	switch by {
 	case "date":
-		query.Order("created_at desc")
+		order = "created_at desc"
 	case "area":
-		query.Order("area desc, created_at desc")
+		order = "area desc, created_at desc"
 	case "visited":
-		query.Order("visited desc, created_at desc")
+		order = "visited desc, created_at desc"
 	default:
 		log.Println("WARN: no such browse order")
-		web.Reply(w, http.StatusOK, false, "no such browse order")
-		return
+		order = "created_at desc"
 	}
+	offset := (page - 1) * PAGE
+	query := model.Db.Raw(
+		fmt.Sprintf(
+			"select users.login, maps.* from maps left join users on users.id = maps.user_id where state = %d order by %s limit %d offset %d",
+			model.READY,
+			order,
+			PAGE,
+			offset,
+		),
+	)
 	var maps []model.MapPublic
-	var total int
-	query.Count(&total).Offset((page - 1) * PAGE).Limit(PAGE)
-	query.Select("users.login, maps.*")
-	query.Joins("left join users on users.id = maps.user_id").Scan(&maps)
+	query.Scan(&maps)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
 		web.Reply(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
+	var total int
+	model.Db.Table("maps").Where("state = ?", model.READY).Count(&total)
 	web.Reply(w, http.StatusOK, true, map[string]interface{}{
 		"maps":  maps,
 		"page":  page,

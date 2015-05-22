@@ -1,0 +1,21 @@
+<table class="table table-striped">
+<tr>
+<th>Link</th>
+<th>Wolrd name</th>
+<th>User</th>
+<th>Area</th>
+<th>Visited</th>
+<th>Uploaded at</th>
+</tr>
+{{#each data.maps}}
+<tr>
+<td><a href="/maps/{{ImageName}}">Image</a></td>
+<td>{{WorldName}}</td>
+<td><a href="/profile.html?user={{Login}}">{{Login}}</a></td>
+<td>{{Area}} ({{Width}}x{{Height}})</td>
+<td>{{Visited}}</td>
+<td>{{#date}}{{CreatedAt}}{{/date}}</td>
+</tr>
+{{/each}}
+</table>
+{{{paginator}}}
