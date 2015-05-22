@@ -16,9 +16,9 @@
     %style
       != css :common
     %script
+      != vars
       != js :error_template
       != js :logreg_template
-      != js :vars
       != js :common
       != js :upload
   %body{onload: 'start()'}

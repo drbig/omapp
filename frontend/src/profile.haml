@@ -14,10 +14,10 @@
     %style
       != css :common
     %script
+      != vars
       != js :error_template
       != js :logreg_template
       != js :profile_template
-      != js :vars
       != js :common
       != js :profile
   %body{onload: 'start()'}

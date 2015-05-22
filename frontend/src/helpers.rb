@@ -10,6 +10,15 @@ def js(name)
   File.read(File.join('frontend', 'build', name.to_s + '.min.js'))
 end
 
+def vars
+  if ENV['OMA_BUILD'] == 'prod'
+    path = File.join('frontend', 'build', 'vars_prod.min.js')
+  else
+    path = File.join('frontend', 'build', 'vars_devel.min.js')
+  end
+  File.read(path)
+end
+
 def css(name)
   File.read(File.join('frontend', 'build', name.to_s + '.css'))
 end

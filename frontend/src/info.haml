@@ -14,9 +14,9 @@
     %style
       != css :common
     %script
+      != vars
       != js :error_template
       != js :info_template
-      != js :vars
       != js :common
       != js :info
   %body{onload: 'start()'}
