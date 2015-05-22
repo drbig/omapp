@@ -49,7 +49,7 @@ function upload() {
     return;
   }
   id = m[1];
-  for (var i = 1; i < files.length; i++) {
+  for (var i = 0; i < files.length; i++) {
     m = rex.exec(files[i].name);
     if (!m) {
       $('#umsg').html('Bad file name. Ensure you only add seen files...');
@@ -67,7 +67,7 @@ function upload() {
   url = URL_U + '/upload';
   send(url, fd, function(r) {
     if (r.success) {
-      $('#umsg').html('Uploaded ' + r.data.uploaded + 'files.');
+      $('#umsg').html('Uploaded ' + r.data.uploaded + ' files.');
     } else {
       berror(url, r);
     }
