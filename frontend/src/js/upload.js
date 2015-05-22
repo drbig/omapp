@@ -1,3 +1,34 @@
+function send(url, data, callback) {
+  $.ajax({
+    url: url,
+    method: 'POST',
+    data: data,
+    crossDomain: true,
+    contentType: false,
+    processData: false,
+    xhrFields: { withCredentials: true },
+    beforeSend: function(x, s) {
+      s.xhr().upload.addEventListener('progress', function(e) {
+        if (e.lengthComputable) {
+          percent = (e.loaded / e.total) * 100;
+          $('#progressbar').progressbar({value: percent});
+        } else {
+          $("#progressbar").progressbar({value: false});
+        }
+      }, false);
+    },
+    success: function(r, s, x) {
+      callback(r);
+    },
+    error: function(x, s, e) {
+      ferror(url, x, s, e);
+    },
+    complete: function(x, s) {
+      $('#progressbar').progressbar('destroy');
+    }
+  });
+}
+
 function upload() {
   fd = new FormData();
   name = $('#worldname').val();
@@ -31,13 +62,14 @@ function upload() {
     fd.append('files[]', files[i]);
   }
   $('#umsg').html('Uploading...');
+  $('#progressbar').progressbar({value: 0});
+  $('#progressbar').progressbar('enable');
   url = URL_U + '/upload';
   send(url, fd, function(r) {
     if (r.success) {
       $('#umsg').html('Uploaded!');
     } else {
-      r = {msg: r.data, url: url, src: 'Backend', ver: r.ver};
-      $('#content').html(Handlebars.partials['error.hbs'](r));
+      berror(url, r);
     }
   });
 }

@@ -12,36 +12,39 @@ Handlebars.registerHelper('date', function(options) {
   return d.toUTCString();
 });
 
-function fetch(url, method, data, enc, pd, callback) {
+function ferror(url, x, s, e) {
+  msg = [x.statusText, s, e].join(', ') + '.';
+  r = {msg: msg, url: url, src: 'Frontend', ver: 'unknown'};
+  $('#content').html(Handlebars.partials['error.hbs'](r));
+}
+
+function berror(url, r) {
+  r = {msg: r.data, url: url, src: 'Backend', ver: r.ver};
+  $('#content').html(Handlebars.partials['error.hbs'](r));
+}
+
+function fetch(url, method, data, callback) {
   $.ajax({
     url: url,
     method: method,
     data: data,
-    contentType: enc,
     crossDomain: true,
-    processData: pd,
     xhrFields: { withCredentials: true },
     success: function(r, s, x) {
       callback(r);
     },
     error: function(x, s, e) {
-      msg = ['All I can tell:', x.statusText, s, e].join(', ') + '.';
-      r = {msg: msg, url: url, src: 'Frontend', ver: 'unknown'};
-      $('#content').html(Handlebars.partials['error.hbs'](r));
+      ferror(url, x, s, e);
     }
   });
 }
 
 function get(url, callback) {
-  fetch(url, 'GET', null, 'application/x-www-form-urlencoded; charset=UTF-8', true, callback);
+  fetch(url, 'GET', null, callback);
 }
 
 function post(url, data, callback) {
-  fetch(url, 'POST', data, 'application/x-www-form-urlencoded; charset=UTF-8', true, callback);
-}
-
-function send(url, data, callback) {
-  fetch(url, 'POST', data, false, false, callback);
+  fetch(url, 'POST', data, callback);
 }
 
 function render(url, template, args) {
@@ -50,8 +53,7 @@ function render(url, template, args) {
       r = $.extend(r, args);
       $('#content').html(Handlebars.partials[template + '.hbs'](r));
     } else {
-      r = {msg: r.data, url: url, src: 'Backend', ver: r.ver};
-      $('#content').html(Handlebars.partials['error.hbs'](r));
+      berror(url, r);
     }
   });
 }
@@ -77,8 +79,7 @@ function logreg(template, clear) {
         $('#content').html('');
       }
     } else {
-      r = {msg: r.data, url: url, src: 'Backend', ver: r.ver};
-      $('#content').html(Handlebars.partials['error.hbs'](r));
+      berror(url, r);
     }
   });
 }

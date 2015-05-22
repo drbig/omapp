@@ -7,10 +7,12 @@
     %title Overmapper - Upload maps
     %link{rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'}/
     %link{rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css'}/
+    %link{rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.theme.min.css'}/
     %script{src: 'https://code.jquery.com/jquery-2.1.3.min.js'}
     %script{src: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js'}
     %script{src: 'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.runtime.min.js'}
     %script{src: 'https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js'}
+    %script{src: 'https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js'}
     %style
       != css :common
     %script
@@ -46,17 +48,28 @@
       %h3 Upload your maps
       %hr
       .panel.panel-default
-        .panel-heading Upload your world maps
+        .panel-heading.panel-success How to do it correctly
         .panel-body
-          %form.form-inline{id: 'upload', role: 'form'}
-            .form-group
-              %input.form-control{id: 'worldname', type: 'text', placeholder: 'World description'}
-            .form-group
-              %input.btn.btn-default{id: 'files', type: 'file', multiple: 'true'}
-            .btn.btn-primary{onclick: 'upload()'} Upload
+          Locate your save folder and look inside for files whose names end with '.seen.X.Y',
+          where X Y are integer numbers. The first part of the file name (e.g. '#TWFyaW8gTWVuZG96YQ==')
+          is character 'id'. There is no (easy) way to tell to which character such a file belongs.
+          You should upload all files for a single 'id' in one go to get a full map.
           %br
-          #umsg
-            Remember to select seen files for a single character only.
+          %br
+          You can put whatever you want in the world description, but 'World name - Character name'
+          (plus maybe some notes) is the encouraged format.
+      %form.form-inline{id: 'upload', role: 'form'}
+        .form-group
+          %input.form-control{id: 'worldname', type: 'text', placeholder: 'World description'}
+        .form-group
+          %input.btn.btn-default{id: 'files', type: 'file', multiple: 'true'}
+        .btn.btn-primary{onclick: 'upload()'} Upload
+      %br
+      #umsg
+        Remember to select seen files for a single character only.
+      %br
+      #progressbar
+      %br
     #content.container
     .container
       = partial :footer
