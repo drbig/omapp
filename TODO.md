@@ -1,4 +1,7 @@
 - ~~Remove blank lines~~
+- Decode character id (it's base64) and do something useful with it
+	- Maybe the frontend can show it
+	- Auto add character name?
 - Proper Makefile
 	- ~~Generate version from git~~
 	- Setup database driver import
