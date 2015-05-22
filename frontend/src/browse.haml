@@ -4,7 +4,7 @@
     %meta{charset: 'utf-8'}/
     %meta{content: 'IE=edge', 'http-equiv': 'X-UA-Compatible'}/
     %meta{content: 'width=device-width, initial-scale=1', name: 'viewport'}/
-    %title Overmapper - User profile
+    %title Overmapper - Browse
     %link{rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'}/
     %link{rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css'}/
     %script{src: 'https://code.jquery.com/jquery-2.1.3.min.js'}
@@ -15,11 +15,10 @@
       != css :common
     %script
       != js :error_template
-      != js :logreg_template
-      != js :profile_template
+      != js :browse_template
       != js :vars
       != js :common
-      != js :profile
+      != js :browse
   %body{onload: 'start()'}
     .navbar.navbar-inverse.navbar-fixed-top{role: 'navigation'}
       .container
@@ -34,16 +33,24 @@
           %ul.nav.navbar-nav
             %li
               %a{href: '/info.html'} Info
-            %li
+            %li.active
               %a{href: '/browse.html'} Browse
             %li
               %a{href: '/upload.html'} Upload
-            %li.active
+            %li
               %a{href: '/profile.html'} Profile
           %ul.nav.navbar-nav.navbar-right
             %li
               %a{href: 'https://github.com/drbig/omapp', target: '_blank'} About
-    #content.container
-      Loading...
+    .container
+      %h3 Browse all maps
+      %hr
+      %div.btn-group{role: 'group'}
+        %a.btn.btn-default{id: 'by_date', onclick: 'filter("by_date")'} by Date
+        %a.btn.btn-default{id: 'by_area', onclick: 'filter("by_area")'} by Area
+        %a.btn.btn-default{id: 'by_visited', onclick: 'filter("by_visited")'} by Visited
+      %br
+      %br
+      #content
     .container
       = partial :footer
