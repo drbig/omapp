@@ -6,4 +6,4 @@ pkg/ver/
 vendor/
 frontend/build/
 frontend/dist/
-omapp-dist.tar.xz
+omapp-*

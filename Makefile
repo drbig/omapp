@@ -36,7 +36,7 @@ pack-all:
 	mkdir -p /tmp/omapp-pack/omapp
 	mkdir /tmp/omapp-pack/omapp/bin
 	mkdir /tmp/omapp-pack/omapp/dist
-	find ./cmd -executable -type f -exec cp '{}' /tmp/omapp-pack/omapp/bin/ \;
+	find ./cmd -perm +0111 -type f -exec cp '{}' /tmp/omapp-pack/omapp/bin/ \;
 	cp ./frontend/dist/* /tmp/omapp-pack/omapp/dist/
 	tar -C /tmp/omapp-pack -cJvf omapp-all.tar.xz omapp
 
@@ -61,6 +61,7 @@ $(CLEAN_TGTS):
 	rm -f $(@:clean-%=%)
 
 version:
+	mkdir -p pkg/ver
 	echo -e "package ver\nconst VERSION = \"$(VERSION)\"" > pkg/ver/version.go
 
 # Frontend targets
