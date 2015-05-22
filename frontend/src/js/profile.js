@@ -1,26 +1,15 @@
-var URL_B = 'http://127.0.0.1:7777'
-var URL_U = 'http://127.0.0.1:8777'
-
-function request(url, template, args) {
-  $.ajax({
-    url: url,
-    crossDomain: true,
-    success: function(r, s, x) {
-      r = $.extend(r, args);
-      $('#content').html(Handlebars.partials[template + '.hbs'](r));
-    },
-    error: function(x, s, e) {
-      msg = ['All I can tell:', x.statusText, s, e].join(', ') + '.';
-      r = $.extend({msg: msg}, args);
-      $('#content').html(Handlebars.partials['error.hbs'](r));
-    }
-  });
-}
-
 function start() {
-  user = window.location.hash.slice(1);
-  if (user == "") {
-    user = 'test';
+  user = $.urlParam('user') || $.cookie('user');
+  if (user) {
+    render(URL_B + '/user/' + user + '/info', 'profile', {user: user});
+  } else {
+    get(URL_B + '/user', function(r) {
+      if (r.success) {
+        $.cookie("user", r.data);
+        render(URL_B + '/user/' + r.data + '/info', 'profile', {user: r.data});
+      } else {
+        $('#content').html(Handlebars.partials['logreg.hbs']({target: 'profile', clear: false}));
+      }
+    });
   }
-  request(URL_B + '/user/' + user + '/info', 'profile', {user: user});
 }

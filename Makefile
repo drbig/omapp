@@ -48,15 +48,15 @@ version:
 	echo -e "package ver\nconst VERSION = \"$(VERSION)\"" > pkg/ver/version.go
 
 # Frontend targets
-frontend: $(JS_TGTS) $(HBS_TGTS) $(CSS_TGTS) $(HAML_TGTS)
+frontend: frontend-clean $(JS_TGTS) $(HBS_TGTS) $(CSS_TGTS) $(HAML_TGTS)
 $(JS_TGTS): $(JS_DEPS)
-	yuicompressor --type js -o $@ $<
+	yuicompressor --type js -o $@ $(subst .min,,$(subst build,src/js,$@))
 $(HBS_TGTS): $(HBS_DEPS)
-	handlebars -p -m -f $@ $<
-$(HAML_TGTS): $(HAML_DEPS)
-	haml --trace -r ./frontend/src/helpers.rb $< > $@
+	handlebars -p -m -f $@ $(subst .min.js,.hbs,$(subst build,src/templates,$(subst _template,,$@)))
 $(CSS_TGTS): $(CSS_DEPS)
-	yuicompressor --type css -o $@ $<
+	yuicompressor --type css -o $@ $(subst build,src/css,$@)
+$(HAML_TGTS): $(HAML_DEPS)
+	haml --trace -r ./frontend/src/helpers.rb $(subst .html,.haml,$(subst dist,src,$@)) > $@
 
 frontend-clean: $(FRONT_CLEAN)
 $(FRONT_CLEAN):
@@ -66,4 +66,4 @@ $(FRONT_CLEAN):
 print-%:
 	@echo $* = $($*)
 
-.PHONY: app-clean backend-test backend-clean frontend-clean
+.PHONY: app-clean backend-test backend-clean frontend frontend-clean

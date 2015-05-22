@@ -1,17 +1,46 @@
-{{#if success}}
-<h1>Profile for user: {{user}}</h1>
+<h3>Profile for user <b>{{user}}</b></h3>
 <hr>
 <table class="table table-striped">
 <tr>
   <th>Since</th>
-  <td>{{data.user.CreatedAt}}</td>
+  <td>{{#date}}{{data.user.CreatedAt}}{{/date}}</td>
 </tr>
 <tr>
-  <th>Retired</th>
-  <td>{{data.user.RetiredAt}}</td>
+  <th>Status</th>
+  {{#if data.user.RetiredAt}}
+    <td><b>Retired</b> at {{#date}}{{data.user.RetiredAt}}{{/date}}</td>
+  {{else}}
+    <td><b>Active</b></td>
+  {{/if}}
+</tr>
+<tr>
+  <th>Maps</th>
+  {{#if data.maps}}
+    <td>Uploaded {{data.maps.length}} map(s).</td>
+  {{else}}
+    <td>No maps uploaded.</td>
+  {{/if}}
 </tr>
 </table>
-<div class="version">version: {{ver}}</div>
-{{else}}
-Something went wrong...
+{{#if data.maps}}
+<h4>Uploaded maps</h4>
+<table class="table table-striped">
+<tr>
+<th>Link</th>
+<th>Wolrd name</th>
+<th>Area</th>
+<th>Visited</th>
+<th>Uploaded at</th>
+</tr>
+{{#each data.maps}}
+<tr>
+<td><a href="/maps/{{ImageName}}">{{ImageName}}</a></td>
+<td>{{WorldName}}</td>
+<td>{{Area}} ({{Width}}x{{Height}})</td>
+<td>{{Visited}}</td>
+<td>{{#date}}{{CreatedAt}}{{/date}}</td>
+</tr>
+{{/each}}
+</table>
 {{/if}}
+<div class="version">{{ver}}</div>

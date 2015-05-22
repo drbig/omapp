@@ -4,7 +4,7 @@
     %meta{charset: 'utf-8'}/
     %meta{content: 'IE=edge', 'http-equiv': 'X-UA-Compatible'}/
     %meta{content: 'width=device-width, initial-scale=1', name: 'viewport'}/
-    %title Overmapper - User profile
+    %title Overmapper - Upload maps
     %link{rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'}/
     %link{rel: 'stylesheet', href: 'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css'}/
     %script{src: 'https://code.jquery.com/jquery-2.1.3.min.js'}
@@ -16,10 +16,9 @@
     %script
       != js :error_template
       != js :logreg_template
-      != js :profile_template
       != js :vars
       != js :common
-      != js :profile
+      != js :upload
   %body{onload: 'start()'}
     .navbar.navbar-inverse.navbar-fixed-top{role: 'navigation'}
       .container
@@ -38,16 +37,30 @@
               %a{href: '/browse.html'} Browse
             %li
               %a{href: '/top.html'} Top
-            %li
-              %a{href: '/upload.html'} Upload
             %li.active
+              %a{href: '/upload.html'} Upload
+            %li
               %a{href: '/profile.html'} Profile
           %ul.nav.navbar-nav.navbar-right
             %li
               %a{href: '/status.html'} Status
             %li
               %a{href: 'https://github.com/drbig/omapp', target: '_blank'} About
+    .container
+      %h3 Upload your maps
+      %hr
+      .panel.panel-default
+        .panel-heading Upload your world maps
+        .panel-body
+          %form.form-inline{id: 'upload', role: 'form'}
+            .form-group
+              %input.form-control{id: 'worldname', type: 'text', placeholder: 'World description'}
+            .form-group
+              %input.btn.btn-default{id: 'files', type: 'file', multiple: 'true'}
+            .btn.btn-primary{onclick: 'upload()'} Upload
+          %br
+          #umsg
+            Remember to select seen files for a single character only.
     #content.container
-      Loading...
     .container
       = partial :footer
