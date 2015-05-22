@@ -1,0 +1,22 @@
+server {
+	listen 8080;
+
+	location /backend/ {
+		proxy_pass http://127.0.0.1:7000/;
+		include /etc/nginx/proxy_params;
+	}
+
+	location /uploader/ {
+		proxy_pass http://127.0.0.1:8000/;
+		include /etc/nginx/proxy_params;
+	}
+
+	location /maps {
+		alias /home/vagrant/omapp/maps;
+	}
+	
+	location / {
+		index info.html;
+		root /home/vagrant/omapp/dist;
+	}
+}
