@@ -31,6 +31,15 @@ app: backend-test backend frontend
 
 app-clean: backend-clean frontend-clean
 
+pack:
+	rm -rf /tmp/omapp-pack
+	mkdir -p /tmp/omapp-pack/omapp
+	mkdir /tmp/omapp-pack/omapp/bin
+	mkdir /tmp/omapp-pack/omapp/dist
+	find ./cmd -executable -type f -exec cp '{}' /tmp/omapp-pack/omapp/bin/ \;
+	cp ./frontend/dist/* /tmp/omapp-pack/omapp/dist/
+	tar -C /tmp/omapp-pack -cJvf omapp-dist.tar.xz omapp
+
 # Backend targets
 backend: version $(CMD_TGTS)
 $(CMD_TGTS): $(CMD_DEPS) $(PKG_DEPS)
