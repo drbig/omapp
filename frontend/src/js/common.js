@@ -7,6 +7,13 @@ $.urlParam = function(name){
   }
 }
 
+Handlebars.registerHelper('times', function(n, block) {
+  accum = '';
+  for (i = 0; i < n; ++i)
+    accum += block.fn(i);
+  return accum;
+});
+
 Handlebars.registerHelper('date', function(options) {
   d = new Date(options.fn(this));
   return d.toUTCString();

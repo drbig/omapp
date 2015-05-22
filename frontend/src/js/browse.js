@@ -10,9 +10,27 @@ function filter(by) {
 }
 
 function refresh() {
+  page = $.urlParam('page') || 1;
   current = $.cookie('filter') || 'by_date';
   by = current.slice(3);
-  render(URL_B + '/browse/' + by, 'browse');
+  url = URL_B + '/browse/' + by + '?page=' + page;
+  get(url, function(r) {
+    if (r.success) {
+      paginator = '<div class="text-center"><ul class="pagination">';
+      for (i = 1; i <= r.data.pages; i++) {
+        if (i == r.data.page) {
+          paginator += '<li><a class="active" href="?page=' + i + '">'+i+'</a></li>';
+        } else {
+          paginator += '<li><a href="?page=' + i + '">'+i+'</a></li>';
+        }
+      }
+      paginator += '</ul></div>';
+      r = $.extend({paginator: paginator}, r);
+      $('#content').html(Handlebars.partials['browse.hbs'](r));
+    } else {
+      berror(url, r);
+    }
+  });
 }
 
 function start() {

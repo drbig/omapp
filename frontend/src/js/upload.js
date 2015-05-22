@@ -67,7 +67,7 @@ function upload() {
   url = URL_U + '/upload';
   send(url, fd, function(r) {
     if (r.success) {
-      $('#umsg').html('Uploaded!');
+      $('#umsg').html('Uploaded ' + r.data.uploaded + 'files.');
     } else {
       berror(url, r);
     }
