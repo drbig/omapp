@@ -3,6 +3,7 @@ OMA_DEPLOY_PORT=9191
 
 export OMA_DATA_ROOT=$OMA_DEPLOY_ROOT
 export OMA_WEB_SECRET=dupa.9
+export OMA_WEB_ORIGIN=http://localhost:9191
 export OMA_DB_DRIVER=sqlite3
 export OMA_DB_ARGS=$OMA_DEPLOY_ROOT/db.bin
 export OMA_DB_VERBOSE=0
