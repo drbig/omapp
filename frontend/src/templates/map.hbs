@@ -1,11 +1,13 @@
 {{#with data}}
 <h3>Map details</h3>
 <hr>
+{{#if State}}
 <center>
 <a href="/maps/{{ImageName}}">
 <img src="/maps/{{ImageName}}" style="size: 25%" alt="{{WorldName}} by {{Login}}">
 </a>
 </center>
+{{/if}}
 <table class="table table-striped">
 <tr>
 <th>World name</th>
@@ -30,6 +32,10 @@
 <tr>
 <th>World ID</th>
 <td>{{ID}}</td>
+</tr>
+<tr>
+<th>State</th>
+<td>{{#state}}{{State}}{{/state}}
 </tr>
 </table>
 {{/with}}
