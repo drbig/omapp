@@ -1,0 +1,35 @@
+{{#with data}}
+<h3>Map details</h3>
+<hr>
+<center>
+<a href="/maps/{{ImageName}}">
+<img src="/maps/{{ImageName}}" style="size: 25%" alt="{{WorldName}} by {{Login}}">
+</a>
+</center>
+<table class="table table-striped">
+<tr>
+<th>World name</th>
+<td>{{WorldName}}</td>
+</tr>
+<tr>
+<th>By user</th>
+<td><a href="/profile.html?user={{Login}}">{{Login}}</a></td>
+</tr>
+<tr>
+<th>Area</th>
+<td>{{Area}} ({{Width}}x{{Height}})</td>
+</tr>
+<tr>
+<th>Visited</th>
+<td>{{Visited}}</td>
+</tr>
+<tr>
+<th>Uploaded at</th>
+<td>{{#date}}{{CreatedAt}}{{/date}}</td>
+</tr>
+<tr>
+<th>World ID</th>
+<td>{{ID}}</td>
+</tr>
+</table>
+{{/with}}

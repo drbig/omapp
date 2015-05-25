@@ -35,6 +35,7 @@ func main() {
 	web.Router.HandleFunc("/user/{login}/info", handleUserInfo)
 	web.Router.HandleFunc("/browse/{by}", handleBrowse)
 	web.Router.HandleFunc("/info", handleInfo)
+	web.Router.HandleFunc("/map/{id}", handleMap)
 	web.Fire(addr)
 }
 
@@ -201,4 +202,27 @@ func handleInfo(w http.ResponseWriter, r *http.Request) {
 		"maps": maps, "mtotal": mtotal,
 		"queue": queue, "qtotal": qtotal,
 	})
+}
+
+func handleMap(w http.ResponseWriter, r *http.Request) {
+	v := mux.Vars(r)
+	id := v["id"]
+	query := model.Db.Raw(
+		fmt.Sprintf(
+			"select users.login, maps.* from maps left join users on users.id = maps.user_id where maps.id = %s",
+			id,
+		),
+	)
+	var maps []model.MapPublic
+	query.Scan(&maps)
+	if query.Error != nil {
+		log.Println("ERROR:", query.Error)
+		web.Reply(w, http.StatusInternalServerError, false, "error running query")
+		return
+	}
+	if len(maps) < 1 {
+		web.Reply(w, http.StatusOK, false, "map not found")
+		return
+	}
+	web.Reply(w, http.StatusOK, true, maps[0])
 }

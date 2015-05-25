@@ -54,9 +54,9 @@ const (
 )
 
 type Map struct {
-	ID            int      `json:"-"`
-	UserID        int      `sql:"index" json:"-"`
-	State         MapState `json:"-"`
+	ID            int
+	UserID        int `sql:"index" json:"-"`
+	State         MapState
 	CreatedAt     time.Time
 	ImageName     string
 	WorldName     string
