@@ -178,26 +178,35 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 
 func handleInfo(w http.ResponseWriter, r *http.Request) {
 	var maps []model.MapPublic
+	query := model.Db.Raw(
+		fmt.Sprintf(
+			"select users.login, maps.* from maps left join users on users.id = maps.user_id where state = %d order by created_at desc limit 10",
+			model.READY,
+		),
+	)
+	query.Scan(&maps)
+	if query.Error != nil {
+		log.Println("ERROR:", query.Error)
+		web.Reply(w, http.StatusInternalServerError, false, "error running query")
+		return
+	}
 	var mtotal int
-
-	query := model.Db.Table("maps").Where("state = ?", model.READY).Order("created_at desc")
-	query.Count(&mtotal).Limit(10).Select("users.login, maps.*")
-	query.Joins("left join users on users.id = maps.user_id").Scan(&maps)
-	if query.Error != nil {
-		log.Println("ERROR:", query.Error)
-		web.Reply(w, http.StatusInternalServerError, false, "error running query")
-		return
-	}
+	model.Db.Table("maps").Where("state = ?", model.READY).Count(&mtotal)
 	var queue []model.MapPublic
-	var qtotal int
-	query = model.Db.Table("maps").Where("state = ?", model.QUEUE).Order("created_at desc")
-	query.Count(&qtotal).Limit(10).Select("users.login, maps.*")
-	query.Joins("left join users on users.id = maps.user_id").Scan(&queue)
+	query = model.Db.Raw(
+		fmt.Sprintf(
+			"select users.login, maps.* from maps left join users on users.id = maps.user_id where state = %d order by created_at desc limit 10",
+			model.QUEUE,
+		),
+	)
+	query.Scan(&queue)
 	if query.Error != nil {
 		log.Println("ERROR:", query.Error)
 		web.Reply(w, http.StatusInternalServerError, false, "error running query")
 		return
 	}
+	var qtotal int
+	model.Db.Table("maps").Where("state = ?", model.QUEUE).Count(&qtotal)
 	web.Reply(w, http.StatusOK, true, map[string]interface{}{
 		"maps": maps, "mtotal": mtotal,
 		"queue": queue, "qtotal": qtotal,
