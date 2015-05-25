@@ -29,14 +29,8 @@ function send(url, data, callback) {
   });
 }
 
-function upload() {
+function upload(doSend) {
   fd = new FormData();
-  name = $('#worldname').val();
-  if (!name) {
-    $('#umsg').html('You should add some world description...');
-    return;
-  }
-  fd.append('worldname', name);
   files = $('#files')[0].files;
   if (files.length < 1) {
     $('#umsg').html('You need to select some seen files...');
@@ -49,6 +43,7 @@ function upload() {
     return;
   }
   id = m[1];
+  name = atob(id);
   for (var i = 0; i < files.length; i++) {
     m = rex.exec(files[i].name);
     if (!m) {
@@ -56,11 +51,22 @@ function upload() {
       return;
     }
     if (m[1] != id) {
-      $('#umsg').html('Found another character\'s seen file. Please decide...');
+      oname = atob(m[1]);
+      $('#umsg').html('Found characters: ' + [name, oname].join(', ') + '. Please decide...');
       return;
     }
     fd.append('files[]', files[i]);
   }
+  $('#umsg').html('Got ' + files.length + ' overmaps for character <b>' + name + '</b>.');
+  if (!doSend) {
+    return;
+  }
+  desc = $('#worldname').val();
+  if (!desc) {
+    $('#umsg').html('You should add some world description...');
+    return;
+  }
+  fd.append('worldname', desc);
   $('#umsg').html('Uploading...');
   $('#progressbar').progressbar({value: 0});
   $('#progressbar').progressbar('enable');

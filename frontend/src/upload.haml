@@ -44,32 +44,39 @@
           %ul.nav.navbar-nav.navbar-right
             %li
               %a{href: 'https://github.com/drbig/omapp', target: '_blank'} About
+    #content.container
     .container
       %h3 Upload your maps
       %hr
       .panel.panel-default
         .panel-heading.panel-success How to do it correctly
         .panel-body
-          Locate your save folder and look inside for files whose names end with '.seen.X.Y',
-          where X Y are integer numbers. The first part of the file name (e.g. '#TWFyaW8gTWVuZG96YQ==')
-          is character 'id'. There is no (easy) way to tell to which character such a file belongs.
-          You should upload all files for a single 'id' in one go to get a full map.
-          %br
-          %br
+          %ol
+            %li If you see the login panel above please first make an account
+            %li Locate your save directory for the world you wish to upload
+            %li Select all files that end in 'seen.X.Y' where X and Y are numbers
+            %li Hit check files and the page will tell you the name of the character, or if there are any problems
+            %li Fill in the world description and hit upload
+            %li If all goes well your upload should be queued for processing
+            %li Share your map!
           You can put whatever you want in the world description, but 'World name - Character name'
           (plus maybe some notes) is the encouraged format.
-      %form.form-inline{id: 'upload', role: 'form'}
-        .form-group
-          %input.form-control{id: 'worldname', type: 'text', placeholder: 'World description'}
-        .form-group
-          %input.btn.btn-default{id: 'files', type: 'file', multiple: 'true'}
-        .btn.btn-primary{onclick: 'upload()'} Upload
-      %br
-      #umsg
-        Remember to select seen files for a single character only.
-      %br
-      #progressbar
-      %br
-    #content.container
+          %br
+          You won't be moved from this page so that you can easily upload all of your characters.
+      .well.well-sm
+        %form{id: 'upload', role: 'form'}
+          .form-group
+            %label{for: 'files'} Select seen files
+            %input.btn.btn-default{id: 'files', type: 'file', multiple: 'true'}
+          .form-group
+            %label{for: 'worldname'} World description
+            %input.form-control{id: 'worldname', type: 'text', placeholder: 'World description'}
+          .btn.btn-default{onclick: 'upload(false)'} Check files
+          .btn.btn-primary{onclick: 'upload(true)'} Upload
+        %br
+        #umsg
+          Remember to select seen files for a single character only.
+        %br
+        #progressbar
     .container
       = partial :footer
