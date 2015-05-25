@@ -1,6 +1,6 @@
 <table class="table table-striped">
 <tr>
-<th>Link</th>
+<th>Links</th>
 <th>World name</th>
 <th>User</th>
 <th>Area</th>
@@ -9,7 +9,10 @@
 </tr>
 {{#each data.maps}}
 <tr>
-<td><a href="/maps/{{ImageName}}">Image</a></td>
+<td>
+<a href="/maps/{{ImageName}}">Image</a>
+<a href="/map.html?id={{ID}}">Details</a>
+</td>
 <td>{{WorldName}}</td>
 <td><a href="/profile.html?user={{Login}}">{{Login}}</a></td>
 <td>{{Area}} ({{Width}}x{{Height}})</td>
