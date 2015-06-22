@@ -169,10 +169,14 @@ func handleBrowse(w http.ResponseWriter, r *http.Request) {
 	}
 	var total int
 	model.Db.Table("maps").Where("state = ?", model.READY).Count(&total)
+	pages := total / PAGE
+	if total%PAGE != 0 {
+		pages += 1
+	}
 	web.Reply(w, http.StatusOK, true, map[string]interface{}{
 		"maps":  maps,
 		"page":  page,
-		"pages": total/PAGE + 1,
+		"pages": pages,
 	})
 }
 
